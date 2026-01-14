@@ -39,5 +39,6 @@ public class JournalEntry {
     public void setContent(String content) {
         this.content = content;
     }
+    
 
 }
