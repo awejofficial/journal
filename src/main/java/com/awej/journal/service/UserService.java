@@ -34,7 +34,12 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public User findByUserName(String userName) {
+    public User findByUserName(User userName) {
         return userRepository.findByUserName(userName);
+    }
+
+    public User findByUserName(String userName) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findByUserName'");
     }
 }

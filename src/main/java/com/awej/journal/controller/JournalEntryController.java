@@ -28,8 +28,8 @@ public class JournalEntryController {
         public ResponseEntity<?>getAllJournalEntryOfUser(@PathVariable String userName){
         User user = userService.findByUserName(userName);
         List<JournalEntry> all = user.getJournalEntries();
-        if(all != null && all.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.OK);
+        if(all != null && !all.isEmpty()){
+            return new ResponseEntity<>(all, HttpStatus.OK);
         }
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -37,6 +37,7 @@ public class JournalEntryController {
         @PostMapping("{userName}")
 public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry myEntry, @PathVariable String userName) {
     try {
+        User user = userService.findByUserName(userName);
         // This will now match the new method signature in the Service
         journalEntryService.saveEntry(myEntry, userName);
         return new ResponseEntity<>(myEntry, HttpStatus.CREATED);
@@ -53,9 +54,9 @@ public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry myEntr
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     
-        @DeleteMapping("id/{myId}")
-        public ResponseEntity<?> deleteEntryById(@PathVariable ObjectId myId){
-            journalEntryService.deleteById(myId);
+        @DeleteMapping("id/{userName}/{myId}")
+        public ResponseEntity<?> deleteEntryById(@PathVariable ObjectId myId,@PathVariable String userName){
+            journalEntryService.deleteById(myId, userName);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
 
@@ -71,7 +72,7 @@ public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry myEntr
             if (newEntry.getContent() != null && !newEntry.getContent().isEmpty()) {
                 old.setContent(newEntry.getContent());
             }
-            journalEntryService.saveEntry(old);
+            journalEntryService.saveEntry(old, null);
             return new ResponseEntity<>(HttpStatus.OK);
         }
     

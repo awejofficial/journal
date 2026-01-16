@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.awej.journal.entity.JournalEntry;
 import com.awej.journal.entity.User;
@@ -20,7 +21,7 @@ public class JournalEntryService {
     @Autowired
     private UserService userService;
 
-// Version 1: For creating new entries (linked to a user)
+@Transactional
 public void saveEntry(JournalEntry journalEntry, String userName) {
     User user = userService.findByUserName(userName);
     journalEntry.setDate(LocalDateTime.now());
@@ -32,13 +33,17 @@ public void saveEntry(JournalEntry journalEntry, String userName) {
 public void saveEntry(JournalEntry journalEntry) {
     journalEntryRepository.save(journalEntry);
 }
+
     public List<JournalEntry> getAll() {
         return journalEntryRepository.findAll();
     }
     public Optional<JournalEntry> findById(ObjectId id) {
         return journalEntryRepository.findById(id);
     }
-    public void deleteById(ObjectId id) {
+    public void deleteById(ObjectId id, String userName) {
+        User user = userService.findByUserName(userName);
+        user.getJournalEntries().removeIf(x -> x.getId().equals(id));
+        userService.saveEntry(user);
     journalEntryRepository.deleteById(id);
 }
 
