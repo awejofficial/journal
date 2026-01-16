@@ -7,39 +7,43 @@ import java.util.Optional;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.awej.journal.entity.JournalEntry;
+import com.awej.journal.entity.User;
 import com.awej.journal.service.JournalEntryService;
+import com.awej.journal.service.UserService;
 
 
 @RestController
 @RequestMapping("/journal")
-public class JournalEntryControllerv2 {
+public class JournalEntryController {
         @Autowired
         private JournalEntryService journalEntryService;
+
+        @Autowired
+        private UserService userService;
         
-        @GetMapping
-        public ResponseEntity<?>getAll(){
-        List<JournalEntry> all = journalEntryService.getAll();
+        @GetMapping("{userName}")
+        public ResponseEntity<?>getAllJournalEntryOfUser(@PathVariable String userName){
+        User user = userService.findByUserName(userName);
+        List<JournalEntry> all = user.getJournalEntries();
         if(all != null && all.isEmpty()){
             return new ResponseEntity<>(HttpStatus.OK);
         }
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        @PostMapping
-        public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry myEntry) {
-            try{
-                myEntry.setDate(LocalDateTime.now());
-                journalEntryService.saveEntry(myEntry);
-                return new ResponseEntity<>(myEntry,HttpStatus.CREATED);
-            }catch (Exception e) {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
-            
-        }
+        @PostMapping("{userName}")
+public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry myEntry, @PathVariable String userName) {
+    try {
+        // This will now match the new method signature in the Service
+        journalEntryService.saveEntry(myEntry, userName);
+        return new ResponseEntity<>(myEntry, HttpStatus.CREATED);
+    } catch (Exception e) {
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+}
         @GetMapping("id/{myId}")
         public ResponseEntity<JournalEntry>getEntryById(@PathVariable ObjectId myId){
         Optional<JournalEntry> journalEntry = journalEntryService.findById(myId);

@@ -1,5 +1,6 @@
 package com.awej.journal.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.awej.journal.entity.JournalEntry;
+import com.awej.journal.entity.User;
 import com.awej.journal.repository.JournalEntryRepository;
 
 @Component
@@ -15,10 +17,21 @@ public class JournalEntryService {
     @Autowired
     private JournalEntryRepository journalEntryRepository;
 
-    public void saveEntry(JournalEntry journalEntry) {
-        journalEntryRepository.save(journalEntry);
-    }
+    @Autowired
+    private UserService userService;
 
+// Version 1: For creating new entries (linked to a user)
+public void saveEntry(JournalEntry journalEntry, String userName) {
+    User user = userService.findByUserName(userName);
+    journalEntry.setDate(LocalDateTime.now());
+    JournalEntry saved = journalEntryRepository.save(journalEntry);
+    user.getJournalEntries().add(saved);
+    userService.saveEntry(user);
+}
+// Version 2: For updating existing entries (no user logic needed)
+public void saveEntry(JournalEntry journalEntry) {
+    journalEntryRepository.save(journalEntry);
+}
     public List<JournalEntry> getAll() {
         return journalEntryRepository.findAll();
     }
